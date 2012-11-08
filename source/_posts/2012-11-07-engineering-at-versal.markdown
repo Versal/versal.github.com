@@ -6,4 +6,6 @@ comments: true
 categories: versal
 ---
 
-Versal is an engineering company.  As a global and comprehensive edtech platform, we believe that if there is an engineering solution to any aspect of education, we will do it with better engineering than anyone else, in a most performant, intuitive, reusable, and minimalistic way code-wise.
+There are many choices for implementing RESTful API architectures in Scala.  Some of us here at Versal had a good experience with Play 2.0 and Swagger, so initially we went that route.  However, Play configuration has quickly become unwieldy.  As we use CoffeeScript on the front end, we didn't need any of the templating functionality of Play, and we also wondered whether Play is as performant as it claims to be.
+
+The engineering spirit of Versal demands that any assumption be tested.  So for the most performant web framework, we went ahead and tested a whole bunch of them.  The results are available as the [http://githib.com/Versal/scamper](Scamper) project.
