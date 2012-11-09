@@ -1,0 +1,10 @@
+
+http://engineering.versal.com/archive.html
+http://engineering.versal.com/atom.xml
+http://engineering.versal.com/categories.html
+http://engineering.versal.com/index.html
+http://engineering.versal.com/pages.html
+http://engineering.versal.com/sitemap.txt
+http://engineering.versal.com/tags.html
+
+http://engineering.versal.com/frameworks/2012/11/07/engineering-at-versal
