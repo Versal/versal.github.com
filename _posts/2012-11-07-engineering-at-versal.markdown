@@ -10,4 +10,4 @@ There are many choices for implementing RESTful API architectures in Scala.  Som
 
 <!--more-->
 
-The engineering spirit of Versal demands that any assumption be tested.  So for the most performant web framework, we went ahead and tested a whole bunch of them.  The results are available as the [Scamper](http://githib.com/Versal/scamper) project.  They are quite surprising.
+The engineering spirit of Versal demands that any assumption be tested.  So for the most performant web framework, we went ahead and tested a whole bunch of them.  The results are available as the [Scamper](http://github.com/Versal/scamper) project.  They are quite surprising.
