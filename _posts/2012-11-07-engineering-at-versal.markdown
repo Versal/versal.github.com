@@ -6,8 +6,30 @@ comments: true
 categories: frameworks
 ---
 
-There are many choices for implementing RESTful API architectures in Scala.  Some of us here at Versal had a good experience with Play 2.0 and Swagger, so initially we went that route.  However, Play configuration has quickly become unwieldy.  As we use CoffeeScript on the front end, we didn't need any of the templating functionality of Play, and we also wondered whether Play is as performant as it claims to be.
+One of our early projects at Versal was building a thin RESTful API on top of our Scala-based platform.  This would allow access to backend services by rich frontend applications, and establish conventions for data and service contracts among our systems.
 
-<!--more-->
+Initially we went with a Play 2.0 and Swagger implementation, but its configuration felt unweildy, and the bulk of its feature set was unnecessary for just a simple RESTful API.  At this point we stepped back to survey the landscape.
 
-The engineering spirit of Versal demands that any assumption be tested.  So for the most performant web framework, we went ahead and tested a whole bunch of them.  The results are available as the [Scamper](http://github.com/Versal/scamper) project.  They are quite surprising!
+Some of us had experience with RESTful Java libraries such as Jersey, Spring MVC, Struts, etc., while others had used Scala libraries such as Scalatra and Spray.  It was apparent that we needed to cast a wide net and compare what we found, so we created the [Scamper](http://github.com/Versal/scamper) project.
+
+Scamper pits several libraries against each other:
+
+* Servlet 3.0
+* Asynchronous Servlet 3.0
+* BlueEyes (Netty)
+* spray-can
+* Scalatra
+* Play 2
+* Play 2 mini
+* Node.js
+* Lift
+* BlueEyes (Jetty)
+* Pinky
+* Finatra
+* Finagle 
+
+We made our best guesses to configure each project in a comparable way, and designed both non-blocking "fast" tests and blocking "slow" tests for each using both ApacheBench and JMeter.
+
+Based on initial analysis, the fastest implementation uses raw Servlet 3.0.  Play 2.0 was somewhat disappointing, but Scalatra turns out to be a nice tradeoff between performance and implementation simplicity.  We decided to go with Scalatra.
+
+We have had good input from the community on how to optimize Play 2.0, yielding significant performance improvements.  We look forward to learning more about each approach!
