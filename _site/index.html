@@ -27,6 +27,7 @@
     <link href="/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
     <link href="/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">    
     <link href="/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+    <link href="/assets/themes/hooligan/css/custom.css?body=1" rel="stylesheet" type="text/css" media="all">
 
     
     <!-- fav and touch icons -->
@@ -140,14 +141,108 @@
         
 
    <!-- here add you post markup -->
-   <h1><a href="/frameworks/2012/11/07/engineering-at-versal">Engineering at Versal</a></h1>
+   <h1><a href="/frameworks/2012/11/16/jellyfish-introduction">Beyond the Reader Monad: Dependency Injection with Jellyfish</a></h1>
+   <p class="author">
+    <span class="date">2012-11-16 10:37:00 -0800</span>
+  </p>
+  <div class="content">
+    <p>One handy use of the reader monad is to build up a program that has a single external dependency which can be provided at the appropriate time.</p>
+
+<p>In Scala a reader might look something like this:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>We can use this to compose a program from parts which each depend on the same external context:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<h2 id='the_problem'>The problem</h2>
+
+<p>This is an easy way to do dependency injection, but it has a drawback: the dependency has to be a single thing. This makes it hard to build a program from components that have different depenencies.</p>
+
+<p>Consider if we change <code>htmlBody</code> to take a <code>Date</code> instead of a <code>String</code>:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>The for expression above will no longer compile, because the reader is an instance of <code>Reader[String, NodeSeq]</code>, so both its <code>map</code> and <code>flatMap</code> methods expect to be passed a function which takes a <code>String</code>, not a <code>Date</code>:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<h2 id='the_solution'>The solution</h2>
+
+<p>What we really want is a way to construct a program, and keep track of all the different dependencies as we go. At the end, we&#8217;ll have a sort of arbitrary-order curried function that we can interpret recursively, providing each dependency as needed.</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>This is what Jellyfish gives us.</p>
+
+<h2 id='how_it_works'>How it works</h2>
+
+<p>A Jellyfish program is represented as an instance of the <code>Program</code> trait, which has two implementations:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>The <code>read</code> function, which wraps Scala&#8217;s <code>shift</code> function, takes a generic function of type <code>A =&gt; Program</code> and wraps it in a <code>With</code> which tracks the type of <code>A</code>. This can happen an arbitrary number of times, resulting in a data structure analogous to a curried function.</p>
+
+<p>Ignoring some of the wrappers, this:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>becomes:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>which becomes:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>which is a curried function with two dependencies.</p>
+
+<p>An interpreter is then built to unwrap each nested <code>With</code>, extract the function of type <code>A =&gt; Program</code>, provide the appropriate instance of <code>A</code>, and continue until the program completes with a <code>Return</code>.</p>
+
+<h2 id='an_example'>An example</h2>
+
+<p>First, write a program which retrieves dependencies via the <code>read</code> function:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>Second, write an interpreter provides the dependencies to the program:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<p>Third, run the interpreter:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+
+<h2 id='use_it'>Use it</h2>
+
+<p>Jellyfish lives on GitHub at <a href='https://github.com/Versal/jellyfish'>github.com/Versal/jellyfish</a>. To use it in your own project, <a href='http://www.scala-sbt.org/release/docs/Detailed-Topics/Compiler-Plugins.html#continuations-plugin-example'>enable continuations</a> and add the Jellyfish library to your <em>build.sbt</em> file:</p>
+
+<p>Liquid error: No such file or directory - posix_spawnp</p>
+  </div>
+
+
+   <!-- here add you post markup -->
+   <h1><a href="/frameworks/2012/11/07/engineering-at-versal">A performance shootout for RESTful libraries</a></h1>
    <p class="author">
     <span class="date">2012-11-07 17:38:00 -0800</span>
   </p>
   <div class="content">
-    <p>There are many choices for implementing RESTful API architectures in Scala. Some of us here at Versal had a good experience with Play 2.0 and Swagger, so initially we went that route. However, Play configuration has quickly become unwieldy. As we use CoffeeScript on the front end, we didn&#8217;t need any of the templating functionality of Play, and we also wondered whether Play is as performant as it claims to be.</p>
-<!--more-->
-<p>The engineering spirit of Versal demands that any assumption be tested. So for the most performant web framework, we went ahead and tested a whole bunch of them. The results are available as the <a href='http://githib.com/Versal/scamper'>Scamper</a> project. They are quite surprising.</p>
+    <p>One of our early projects at Versal was building a thin RESTful API on top of our Scala-based platform. This would allow access to backend services by rich frontend applications, and establish conventions for data and service contracts among our systems.</p>
+
+<p>Initially we went with a Play 2.0 and Swagger implementation, but its configuration felt unweildy, and the bulk of its feature set was unnecessary for just a simple RESTful API. At this point we stepped back to survey the landscape.</p>
+
+<p>Some of us had experience with RESTful Java libraries such as Jersey, Spring MVC, Struts, etc., while others had used Scala libraries such as Scalatra and Spray. It was apparent that we needed to cast a wide net and compare what we found, so we created the <a href='http://github.com/Versal/scamper'>Scamper</a> project.</p>
+
+<p>Scamper pits several libraries against each other:</p>
+
+<p><img alt='Fast Test' src='https://raw.github.com/Versal/scamper/master/readme/fast-test.png' /></p>
+
+<p>We made our best guesses to configure each project in a comparable way, and designed both non-blocking &#8220;fast&#8221; tests and blocking &#8220;slow&#8221; tests for each using both ApacheBench and JMeter.</p>
+
+<p>Based on initial analysis, the fastest implementation uses raw Servlet 3.0. Play 2.0 was somewhat disappointing, but Scalatra turns out to be a nice tradeoff between performance and implementation simplicity. We decided to go with Scalatra.</p>
+
+<p>We have had good input from the community on how to optimize Play 2.0, yielding significant performance improvements. We look forward to learning more about each approach!</p>
   </div>
 
 

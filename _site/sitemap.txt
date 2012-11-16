@@ -7,4 +7,5 @@ http://engineering.versal.com/pages.html
 http://engineering.versal.com/sitemap.txt
 http://engineering.versal.com/tags.html
 
+http://engineering.versal.com/frameworks/2012/11/16/jellyfish-introduction
 http://engineering.versal.com/frameworks/2012/11/07/engineering-at-versal

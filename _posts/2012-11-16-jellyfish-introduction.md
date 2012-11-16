@@ -12,48 +12,48 @@ One handy use of the reader monad is to build up a program that has a single ext
 
 In Scala a reader might look something like this:
 
-<pre>
+{% highlight scala %}
 trait Monad[A, F[_]] {
-  def map[B](f: A =&gt; B): F[B]
-  def flatMap[B](f: A =&gt; F[B]): F[B]
+  def map[B](f: A => B): F[B]
+  def flatMap[B](f: A => F[B]): F[B]
 }
 
-class Reader[E, A](g: E =&gt; A) extends Monad[A, ({type λ[α] = E =&gt; α})#λ] {
+class Reader[E, A](g: E => A) extends Monad[A, ({type λ[α] = E => α})#λ] {
   def apply(e: E): A = g(e)
-  def map[B](f: A =&gt; B): E =&gt; B = { e =&gt; f(g(e)) }
-  def flatMap[B](f: A =&gt; (E =&gt; B)): E =&gt; B = { e =&gt; f(g(e))(e) }
+  def map[B](f: A => B): E => B = { e => f(g(e)) }
+  def flatMap[B](f: A => (E => B)): E => B = { e => f(g(e))(e) }
 }
 
 object Reader {
-  implicit def function1ToReader[E, A](g: E =&gt; A): Reader[E, A] = new Reader(g)
+  implicit def function1ToReader[E, A](g: E => A): Reader[E, A] = new Reader(g)
 }
-</pre>
+{% endhighlight %}
 
 We can use this to compose a program from parts which each depend on the same external context:
 
-<pre>
+{% highlight scala %}
 import scala.xml.NodeSeq
 import Reader.function1ToReader
 
-val htmlHeader: String =&gt; NodeSeq =
-  { title =&gt; &lt;head&gt;&lt;title&gt;{title}&lt;/title&gt;&lt;/head&gt; }
+val htmlHeader: String => NodeSeq =
+  { title => <head><title>{title}</title></head> }
 
-val htmlBody: String =&gt; NodeSeq =
-  { title =&gt; &lt;body&gt;&lt;h1&gt;{title}&lt;/h1&gt;&lt;/body&gt; }
+val htmlBody: String => NodeSeq =
+  { title => <body><h1>{title}</h1></body> }
 
-val html: NodeSeq =&gt; NodeSeq =&gt; NodeSeq =
-  { header =&gt; body =&gt; &lt;html&gt;{header}{body}&lt;/html&gt; }
+val html: NodeSeq => NodeSeq => NodeSeq =
+  { header => body => <html>{header}{body}</html> }
 
 val pageFromTitle: Reader[String, NodeSeq] =
   for {
-    header &lt;- htmlHeader
-    body   &lt;- htmlBody
+    header <- htmlHeader
+    body   <- htmlBody
     page   =  html(header)(body)
   } yield page // a program which, given a title, produces an HTML page
 
 val page: NodeSeq = pageFromTitle("Reader Example")
-println(page) // &lt;html&gt;&lt;head&gt;&lt;title&gt;Reader Example&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Reader Example&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;
-</pre>
+println(page) // <html><head><title>Reader Example</title></head><body><h1>Reader Example</h1></body></html>
+{% endhighlight %}
 
 ## The problem
 
@@ -61,30 +61,30 @@ This is an easy way to do dependency injection, but it has a drawback: the depen
 
 Consider if we change `htmlBody` to take a `Date` instead of a `String`:
 
-<pre>
-val htmlBody: Date =&gt; NodeSeq = date =&gt; &lt;body&gt;&lt;h1&gt;{date.toString}&lt;/h1&gt;&lt;/body&gt;
-</pre>
+{% highlight scala %}
+val htmlBody: Date => NodeSeq = date => <body><h1>{date.toString}</h1></body>
+{% endhighlight %}
 
 The for expression above will no longer compile, because the reader is an instance of `Reader[String, NodeSeq]`, so both its `map` and `flatMap` methods expect to be passed a function which takes a `String`, not a `Date`:
 
-<pre>
-[error]  found   : java.util.Date =&gt; scala.xml.NodeSeq
-[error]  required: String =&gt; ?
-[error]   body   &lt;- htmlBody
-</pre>
+{% highlight scala %}
+[error]  found   : java.util.Date => scala.xml.NodeSeq
+[error]  required: String => ?
+[error]   body   <- htmlBody
+{% endhighlight %}
 
 ## The solution
 
 What we really want is a way to construct a program, and keep track of all the different dependencies as we go.  At the end, we'll have a sort of arbitrary-order curried function that we can interpret recursively, providing each dependency as needed.
 
-<pre>
+{% highlight scala %}
 val simpleProgram: Program =
   program {
     val bar: Bar = read[Bar]  // retrieve the `Bar` dependency
     val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
     Return("foo is " + foo.x + ", bar is " + bar.x)
   }
-</pre>
+{% endhighlight %}
 
 This is what Jellyfish gives us.
 
@@ -92,50 +92,50 @@ This is what Jellyfish gives us.
 
 A Jellyfish program is represented as an instance of the `Program` trait, which has two implementations:
 
-<pre>
+{% highlight scala %}
 case class Return(a: Any) extends Program
-case class With[A](c: Class[A], f: A =&gt; Program) extends Program
-</pre>
+case class With[A](c: Class[A], f: A => Program) extends Program
+{% endhighlight %}
 
-The `read` function, which wraps Scala's `shift` function, takes a generic function of type `A =&gt; Program` and wraps it in a `With` which tracks the type of `A`.  This can happen an arbitrary number of times, resulting in a data structure analogous to a curried function.
+The `read` function, which wraps Scala's `shift` function, takes a generic function of type `A => Program` and wraps it in a `With` which tracks the type of `A`.  This can happen an arbitrary number of times, resulting in a data structure analogous to a curried function.
 
 Ignoring some of the wrappers, this:
 
-<pre>
+{% highlight scala %}
 val bar: Bar = read[Bar]  // retrieve the `Bar` dependency
 val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
 Return("foo is " + foo.x + ", bar is " + bar.x)
-</pre>
+{% endhighlight %}
 
 becomes:
 
-<pre>
-bar: Bar =&gt; {
+{% highlight scala %}
+bar: Bar => {
   val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
   Return("foo is " + foo.x + ", bar is " + bar.x)
 }
-</pre>
+{% endhighlight %}
 
 which becomes:
 
-<pre>
-bar: Bar =&gt; {
-  foo: Foo =&gt; {
+{% highlight scala %}
+bar: Bar => {
+  foo: Foo => {
     Return("foo is " + foo.x + ", bar is " + bar.x)
   }
 }
-</pre>
+{% endhighlight %}
 
 which is a curried function with two dependencies.
 
-An interpreter is then built to unwrap each nested `With`, extract the function of type `A =&gt; Program`, provide the appropriate instance of `A`, and continue until the program completes with a `Return`.
+An interpreter is then built to unwrap each nested `With`, extract the function of type `A => Program`, provide the appropriate instance of `A`, and continue until the program completes with a `Return`.
 
 
 ## An example
 
 First, write a program which retrieves dependencies via the `read` function:
 
-<pre>
+{% highlight scala %}
 case class Foo(x: Int)
 case class Bar(x: String)
 
@@ -152,11 +152,11 @@ object SimpleProgram {
     }
 
 }
-</pre>
+{% endhighlight %}
 
 Second, write an interpreter provides the dependencies to the program:
 
-<pre>
+{% highlight scala %}
 object SimpleInterpreter {
 
   import com.versal.jellyfish.{classy, Program, Return, With}
@@ -167,25 +167,25 @@ object SimpleInterpreter {
   // run a program, injecting dependencies as needed
   def run(p: Program): Any =
     p match {
-      case With(c, f) if c.isA[Foo] =&gt; run(f(foo)) // inject the `Foo` dependency and continue
-      case With(c, f) if c.isA[Bar] =&gt; run(f(bar)) // inject the `Bar` dependency and continue
-      case Return(a)                =&gt; a           // all done - return the result
+      case With(c, f) if c.isA[Foo] => run(f(foo)) // inject the `Foo` dependency and continue
+      case With(c, f) if c.isA[Bar] => run(f(bar)) // inject the `Bar` dependency and continue
+      case Return(a)                => a           // all done - return the result
     }
 
 }
-</pre>
+{% endhighlight %}
 
 Third, run the interpreter:
 
-<pre>
+{% highlight scala %}
 val result = SimpleInterpreter.run(SimpleProgram.simpleProgram)
 println(result) // prints "foo is 42, bar is baz"
-</pre>
+{% endhighlight %}
 
 ## Use it
 
 Jellyfish lives on GitHub at [github.com/Versal/jellyfish](https://github.com/Versal/jellyfish).  To use it in your own project, [enable continuations](http://www.scala-sbt.org/release/docs/Detailed-Topics/Compiler-Plugins.html#continuations-plugin-example) and add the Jellyfish library to your _build.sbt_ file:
 
-<pre>
+{% highlight scala %}
 libraryDependencies += "com.versal" %% "jellyfish" % "0.1-RC1"
-</pre>
+{% endhighlight %}
