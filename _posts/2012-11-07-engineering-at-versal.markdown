@@ -14,19 +14,7 @@ Some of us had experience with RESTful Java libraries such as Jersey, Spring MVC
 
 Scamper pits several libraries against each other:
 
-* Servlet 3.0
-* Asynchronous Servlet 3.0
-* BlueEyes (Netty)
-* spray-can
-* Scalatra
-* Play 2
-* Play 2 mini
-* Node.js
-* Lift
-* BlueEyes (Jetty)
-* Pinky
-* Finatra
-* Finagle 
+![Fast Test](https://raw.github.com/Versal/scamper/master/readme/fast-test.png)
 
 We made our best guesses to configure each project in a comparable way, and designed both non-blocking "fast" tests and blocking "slow" tests for each using both ApacheBench and JMeter.
 
