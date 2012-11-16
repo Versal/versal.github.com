@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "A performance shootout for REST libraries"
+title: "A performance shootout for RESTful libraries"
 date: 2012-11-07 17:38
 comments: true
 categories: frameworks
