@@ -52,7 +52,7 @@ val pageFromTitle: Reader[String, NodeSeq] =
   } yield page // a program which, given a title, produces an HTML page
 
 val page: NodeSeq = pageFromTitle("Reader Example")
-println(page) // <html><head><title>Reader Example</title></head><body><h1>Reader Example</h1></body></html>
+println(page) // <html><head><title>Reader Example</title></head><body> ...
 {% endhighlight %}
 
 ## The problem
