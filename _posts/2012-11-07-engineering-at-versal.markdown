@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Engineering at Versal"
+title: "A performance shootout for REST libraries and frameworks"
 date: 2012-11-07 17:38
 comments: true
 categories: frameworks
