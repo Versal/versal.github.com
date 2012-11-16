@@ -154,7 +154,7 @@ object SimpleProgram {
 }
 {% endhighlight %}
 
-Second, write an interpreter provides the dependencies to the program:
+Second, write an interpreter which provides the dependencies to the program:
 
 {% highlight scala %}
 object SimpleInterpreter {
