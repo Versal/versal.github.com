@@ -80,8 +80,8 @@ What we really want is a way to construct a program, and keep track of all the d
 {% highlight scala %}
 val simpleProgram: Program =
   program {
-    val bar: Bar = read[Bar]  // retrieve the `Bar` dependency
-    val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
+    val bar: Bar = read[Bar] // retrieve the `Bar` dependency
+    val foo: Foo = read[Foo] // retrieve the `Foo` dependency
     Return("foo is " + foo.x + ", bar is " + bar.x)
   }
 {% endhighlight %}
@@ -102,8 +102,8 @@ The `read` function, which wraps Scala's `shift` function, takes a generic funct
 Ignoring some of the wrappers, this:
 
 {% highlight scala %}
-val bar: Bar = read[Bar]  // retrieve the `Bar` dependency
-val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
+val bar: Bar = read[Bar] // retrieve the `Bar` dependency
+val foo: Foo = read[Foo] // retrieve the `Foo` dependency
 Return("foo is " + foo.x + ", bar is " + bar.x)
 {% endhighlight %}
 
@@ -111,7 +111,7 @@ becomes:
 
 {% highlight scala %}
 bar: Bar => {
-  val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
+  val foo: Foo = read[Foo] // retrieve the `Foo` dependency
   Return("foo is " + foo.x + ", bar is " + bar.x)
 }
 {% endhighlight %}
@@ -146,8 +146,8 @@ object SimpleProgram {
   // create a program with some dependencies
   val simpleProgram: Program =
    program {
-      val bar: Bar = read[Bar]  // retrieve the `Bar` dependency
-      val foo: Foo = read[Foo]  // retrieve the `Foo` dependency
+      val bar: Bar = read[Bar] // retrieve the `Bar` dependency
+      val foo: Foo = read[Foo] // retrieve the `Foo` dependency
       Return("foo is " + foo.x + ", bar is " + bar.x)
     }
 
