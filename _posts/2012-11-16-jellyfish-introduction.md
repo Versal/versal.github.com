@@ -4,6 +4,7 @@ title: "Beyond the Reader Monad: Dependency Injection with Jellyfish"
 date: 2012-11-16 10:37
 comments: true
 categories: frameworks
+author: James
 ---
 
 {% include JB/setup %}

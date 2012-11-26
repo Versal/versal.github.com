@@ -4,6 +4,7 @@ title: "A performance shootout for RESTful libraries"
 date: 2012-11-07 17:38
 comments: true
 categories: frameworks
+author: James
 ---
 
 One of our early projects at Versal was building a thin RESTful API on top of our Scala-based platform.  This would allow access to backend services by rich frontend applications, and establish conventions for data and service contracts among our systems.
