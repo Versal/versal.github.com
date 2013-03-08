@@ -7,6 +7,8 @@ categories: testing
 author: Wei
 ---
 
+{% include JB/setup %}
+
 # Integration Testing with Clojure and Clojurescript
 
 A popular framework for integration testing web apps is Selenium, which programmatically controls a browser to run tests. Selenium has its drawbacks, namely tests can be [slow, brittle and non-deterministic](http://jdrew33.blogspot.com/2012/02/pros-and-cons-of-selenium.html). In this post, we'll look at an alternative integration testing solution that uses Clojure and Clojurescript.
@@ -48,7 +50,7 @@ Ajax request with some sample data:
 Compojure route on the server that sets an atom to the value it receives.
 ```Clojure
 (POST "/api/submit"
-                 {{s :submission} :params}
+                 { {s :submission} :params}
                  ;; Modify server state
                  (reset! submission s))
 ```
