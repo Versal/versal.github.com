@@ -3,34 +3,22 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>
-      
-        A performance shootout for RESTful libraries - 
-      
-      Versal Engineering
-    </title>
+    <title>A performance shootout for RESTful libraries</title>
     
     <meta name="author" content="Versal">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+    <link href="/assets/themes/twitter/css/syntax.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/assets/themes/twitter/css/custom.css?body=1" rel="stylesheet" type="text/css" media="all">
 
-    <script src="/assets/themes/hooligan/js/jquery.min.js"></script>
-    <script src="/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
-
-    <link href="/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">    
-    <link rel="stylesheet" type="text/css" href="/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css" />
-    <link href="/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
-    <link href="/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">    
-    <link href="/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
-    <link href="/assets/themes/hooligan/css/custom.css?body=1" rel="stylesheet" type="text/css" media="all">
-
-    
-    <!-- fav and touch icons -->
+    <!-- Le fav and touch icons -->
   <!-- Update these with your own images
     <link rel="shortcut icon" href="images/favicon.ico">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -40,25 +28,15 @@
   </head>
 
   <body>
+
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
-          <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>      
-
-
           <a class="brand" href="/">Versal Engineering</a>
-
-
-          <div class="nav-collapse">
-            <ul class="nav">
-              
-              
-              
+          <ul class="nav">
+            
+            
+            
 
 
   
@@ -109,45 +87,21 @@
 
 
 
-            </ul>
-            <ul class="nav pull-right social visible-desktop">
-              <li class="divider-vertical"></li>
-              
-                <li>
-                  <a href="https://www.github.com/versal" class="zocial github icon" target="_blank">
-                    <span class="hidden-desktop">Github</a>
-                  </a>
-                </li>
-              
-                  
-              
-                <li>
-                  <a href="http://www.twitter.com/VersalGroupInc" class="zocial twitter icon" target="_blank">
-                  <span class="hidden-desktop">Twitter</a>
-                  </a>
-                </li>
-                                        
-                         
-                                  
-              
-            </ul>
-          </div>
+          </ul>
         </div>
       </div>
     </div>
 
     <div class="container">
+
       <div class="content">
         
 <div class="page-header">
-  <h1>
-    A performance shootout for RESTful libraries 
-    
-  </h1>
+  <h1>A performance shootout for RESTful libraries</h1>
 </div>
 
 <div class="row">
-  <div class="span8">
+  <div class="span12">
     <p>One of our early projects at Versal was building a thin RESTful API on top of our Scala-based platform. This would allow access to backend services by rich frontend applications, and establish conventions for data and service contracts among our systems.</p>
 
 <p>Initially we went with a Play 2.0 and Swagger implementation, but its configuration felt unweildy, and the bulk of its feature set was unnecessary for just a simple RESTful API. At this point we stepped back to survey the landscape.</p>
@@ -163,15 +117,20 @@
 <p>Based on initial analysis, the fastest implementation uses raw Servlet 3.0. Play 2.0 was somewhat disappointing, but Scalatra turns out to be a nice tradeoff between performance and implementation simplicity. We decided to go with Scalatra.</p>
 
 <p>We have had good input from the community on how to optimize Play 2.0, yielding significant performance improvements. We look forward to learning more about each approach!</p>
+    <p class="byline">
+      Posted by James &middot; 07 November 2012
+    </p>
     <hr>
-    <div class="pagination btn-group">
+    <div class="pagination">
+      <ul>
       
-        <a class="btn disabled prev">&larr; Previous</a>
+        <li class="prev disabled"><a>&larr; Previous</a></li>
       
-        <a class="btn" href="/archive.html">Archive</a>
+        <li><a href="/archive.html">Archive</a></li>
       
-        <a class="btn next" href="/frameworks/2012/11/16/jellyfish-introduction" title="Beyond the Reader Monad: Dependency Injection with Jellyfish">Next &rarr;</a>
+        <li class="next"><a href="/frameworks/2012/11/16/jellyfish-introduction" title="Beyond the Reader Monad: Dependency Injection with Jellyfish">Next &rarr;</a></li>
       
+      </ul>
     </div>
     <hr>
     
@@ -179,7 +138,7 @@
 
   <div id="disqus_thread"></div>
 <script type="text/javascript">
-    var disqus_developer = 1;
+    
     var disqus_shortname = 'versalengineering'; // required: replace example with your forum shortname
     
     /* * * DON'T EDIT BELOW THIS LINE * * */
@@ -197,14 +156,6 @@
 
   </div>
   
-  <div class="span4">
-    <section>
-      <h4>Published</h4>
-      <div class="date"><span>07 November 2012</span></div>
-    </section>
-         
-             
-  </div>
 </div>
 
 
@@ -213,11 +164,29 @@
       <footer>
         <p>&copy; Versal 2012 
           with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
-          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
         </p>
       </footer>
+
     </div> <!-- /container -->
+
     
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-123-1234']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
   </body>
 </html>
 

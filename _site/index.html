@@ -3,34 +3,22 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>
-      
-        Versal Engineering - 
-      
-      Versal Engineering
-    </title>
+    <title>Versal Engineering</title>
     
     <meta name="author" content="Versal">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+    <link href="/assets/themes/twitter/css/syntax.css" rel="stylesheet" type="text/css" media="all">
+    <link href="/assets/themes/twitter/css/custom.css?body=1" rel="stylesheet" type="text/css" media="all">
 
-    <script src="/assets/themes/hooligan/js/jquery.min.js"></script>
-    <script src="/assets/themes/hooligan/bootstrap/js/bootstrap.min.js"></script>
-
-    <link href="/assets/themes/hooligan/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/assets/themes/hooligan/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">    
-    <link rel="stylesheet" type="text/css" href="/assets/themes/hooligan/css-social-buttons/css/zocial.stripped.css" />
-    <link href="/assets/themes/hooligan/css/pygments.css" rel="stylesheet" type="text/css" media="all">
-    <link href="/assets/themes/hooligan/css/darkstrap.css" rel="stylesheet" type="text/css" media="all">    
-    <link href="/assets/themes/hooligan/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
-    <link href="/assets/themes/hooligan/css/custom.css?body=1" rel="stylesheet" type="text/css" media="all">
-
-    
-    <!-- fav and touch icons -->
+    <!-- Le fav and touch icons -->
   <!-- Update these with your own images
     <link rel="shortcut icon" href="images/favicon.ico">
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
@@ -40,25 +28,15 @@
   </head>
 
   <body>
+
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
-          <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>      
-
-
           <a class="brand" href="/">Versal Engineering</a>
-
-
-          <div class="nav-collapse">
-            <ul class="nav">
-              
-              
-              
+          <ul class="nav">
+            
+            
+            
 
 
   
@@ -109,36 +87,98 @@
 
 
 
-            </ul>
-            <ul class="nav pull-right social visible-desktop">
-              <li class="divider-vertical"></li>
-              
-                <li>
-                  <a href="https://www.github.com/versal" class="zocial github icon" target="_blank">
-                    <span class="hidden-desktop">Github</a>
-                  </a>
-                </li>
-              
-                  
-              
-                <li>
-                  <a href="http://www.twitter.com/VersalGroupInc" class="zocial twitter icon" target="_blank">
-                  <span class="hidden-desktop">Twitter</a>
-                  </a>
-                </li>
-                                        
-                         
-                                  
-              
-            </ul>
-          </div>
+          </ul>
         </div>
       </div>
     </div>
 
     <div class="container">
+
       <div class="content">
         
+
+   <!-- here add you post markup -->
+   <h1><a href="/testing/2013/03/07/shuttle-js-jvm-testing">Integration Testing with Clojure and Clojurescript</a></h1>
+   <p class="author">
+    <span class="date">2013-03-07 13:11:00 -0800</span>
+  </p>
+  <div class="content">
+    <p>A popular framework for integration testing web apps is Selenium, which programmatically controls a browser to run tests. Selenium has its drawbacks, namely tests can be <a href='http://jdrew33.blogspot.com/2012/02/pros-and-cons-of-selenium.html'>slow, brittle and non-deterministic</a>. In this post, we&#8217;ll look at an alternative integration testing solution that uses Clojure and Clojurescript.</p>
+
+<p>The ideal way to do integration testing would be to write tests that can make frontend calls and then verify state changes on the backend. We thought that Clojure (a modern dialect of Lisp that runs on the JVM) and ClojureScript (its Javascript variant) would be good candidates for the test framework since it allows us to use essentially the same language on both the frontend and backend. An added benefit is that the backend can be written in any language that runs on the JVM, and the client code can be Javascript or anything that compiles to Javascript. As an example, Versal&#8217;s stack is primarily Scala and Coffeescript.</p>
+
+<p>To allow communication between the frontend and the backend, we&#8217;ll use the excellent utility <a href='http://github.com/cemerick/yonder'>cemerick/yonder</a>. Yonder allows the server to remotely run ClojureScript through an nREPL (network REPL) connection, and includes helper functions for setting up and managing the nREPL connection. When a client first loads the page, it opens a connection to server and then waits for commands.</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='nf'>repl/connect</span> <span class='s'>&quot;http://localhost:9000/repl&quot;</span><span class='p'>)</span>
+</code></pre></div>
+<p>The test suite must create an nREPL endpoint on the server side before it loads the client. Yonder&#8217;s mechanism for doing this is <code>open-session</code>, which returns a session handle for the REPL it creates. <code>open-session</code> takes two parameters, <code>:prepare</code> (function that sets up the client), and <code>:new-server</code> (a description for the server that acts as the nREPL endpoint). For the prepare function, we&#8217;ll use the default function included with yonder that loads the client page using PhantomJS. For the server, we&#8217;ll use the default nREPL server with an additional middleware that allows ClojureScript evaluation.</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='nf'>yonder/open-session</span>
+              <span class='p'>{</span><span class='ss'>:prepare</span> <span class='nv'>yonder/prepare-phantomjs</span>
+               <span class='ss'>:new-server</span>
+               <span class='p'>{</span><span class='ss'>:handler</span> <span class='p'>(</span><span class='nf'>server/default-handler</span>
+                           <span class='o'>#</span><span class='ss'>&#39;cemerick.piggieback/wrap-cljs-repl</span><span class='p'>)}})</span>
+</code></pre></div>
+<p>With the session returned by <code>open-session</code>, we can now execute ClojureScript on the client remotely from our Clojure server!</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='nf'>yonder/eval</span> <span class='nv'>session</span> <span class='p'>(</span><span class='nb'>+ </span><span class='mi'>1</span> <span class='mi'>2</span> <span class='mi'>3</span><span class='p'>))</span>
+<span class='p'>(</span><span class='nf'>yonder/eval</span> <span class='nv'>session</span> <span class='p'>(</span><span class='nb'>into </span><span class='p'>[]</span> <span class='p'>(</span><span class='nf'>js/Array</span> <span class='ss'>:a</span> <span class='ss'>&#39;b</span> <span class='ss'>::c</span> <span class='s'>&quot;d&quot;</span><span class='p'>)))</span>
+</code></pre></div>
+<p>Now we&#8217;re ready to write our integration tests. For a sample test, let&#8217;s make the client perform an Ajax POST and store the submission on the server. Then we&#8217;ll verify that we received the correct submission.</p>
+
+<p>Ajax request with some sample data:</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='kd'>defn </span><span class='o'>^</span><span class='ss'>:export</span> <span class='nv'>submit</span> <span class='p'>[]</span>
+  <span class='p'>(</span><span class='nf'>xhr</span> <span class='p'>[</span><span class='ss'>:post</span> <span class='s'>&quot;/api/submit&quot;</span><span class='p'>]</span> <span class='p'>{</span><span class='ss'>:submission</span> <span class='mi'>42</span><span class='p'>}</span>
+       <span class='p'>(</span><span class='k'>fn </span><span class='p'>[</span><span class='nv'>_</span><span class='p'>]</span> <span class='p'>(</span><span class='nf'>log</span> <span class='s'>&quot;Finished submission&quot;</span><span class='p'>))))</span>
+</code></pre></div>
+<p>Compojure route on the server that sets an atom to the value it receives.</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='nf'>POST</span> <span class='s'>&quot;/api/submit&quot;</span>
+                 <span class='p'>{</span> <span class='p'>{</span><span class='nv'>s</span> <span class='ss'>:submission</span><span class='p'>}</span> <span class='ss'>:params</span><span class='p'>}</span>
+                 <span class='c1'>;; Modify server state</span>
+                 <span class='p'>(</span><span class='nf'>reset!</span> <span class='nv'>submission</span> <span class='nv'>s</span><span class='p'>))</span>
+</code></pre></div>
+<p>So our final test looks like this. Note that the prepare function opens up test.html instead of the default index.html. After we have an nREPL session, we call invoke the ajax call on the client side, wait a few seconds for the request to complete, and verify the result in the atom.</p>
+<div class='highlight'><pre><code class='clojure'><span class='p'>(</span><span class='nf'>deftest</span> <span class='nv'>browser-test</span>
+         <span class='p'>(</span><span class='nf'>yonder/with-session</span>
+           <span class='p'>[</span><span class='nv'>session</span>
+            <span class='p'>(</span><span class='nf'>yonder/open-session</span>
+              <span class='p'>{</span><span class='ss'>:prepare</span> <span class='p'>(</span><span class='nb'>partial </span><span class='nv'>yonder/prepare-phantomjs</span>
+                                 <span class='p'>{</span><span class='ss'>:url</span> <span class='s'>&quot;http://localhost:8080/test.html&quot;</span><span class='p'>})</span>
+               <span class='ss'>:new-server</span>
+               <span class='p'>{</span><span class='ss'>:handler</span> <span class='p'>(</span><span class='nf'>server/default-handler</span>
+                           <span class='o'>#</span><span class='ss'>&#39;cemerick.piggieback/wrap-cljs-repl</span><span class='p'>)}})]</span>
+           <span class='p'>(</span><span class='nf'>yonder/eval</span> <span class='nv'>session</span> <span class='p'>(</span><span class='nf'>cljs.test/submit</span><span class='p'>))</span>
+           <span class='p'>(</span><span class='nf'>Thread/sleep</span> <span class='mi'>4000</span><span class='p'>)</span>
+           <span class='p'>(</span><span class='nf'>is</span> <span class='p'>(</span><span class='nb'>= </span><span class='s'>&quot;42&quot;</span> <span class='o'>@</span><span class='nv'>submission</span><span class='p'>))))</span>
+</code></pre></div>
+<p>We can run our test from the command line with <code>lein test</code>.</p>
+<div class='highlight'><pre><code class='bash'>wei:shuttle wei<span class='nv'>$ </span>lein <span class='nb'>test</span>
+
+lein <span class='nb'>test </span>shuttle.core-test
+2013-03-06 13:46:34.936:INFO:oejs.Server:jetty-7.6.1.v20120215
+
+Testing shuttle.core-test
+2013-03-06 13:46:35.142:INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:8080
+
+Ran 1 tests containing 1 assertions.
+0 failures, 0 errors.
+</code></pre></div>
+<p>Please check out the project at <a href='http://www.github.com/versal/shuttle'>versal/shuttle</a>!</p>
+  </div>
+
+
+   <!-- here add you post markup -->
+   <h1><a href="/frameworks/2012/11/30/Sandbox-js">Sandbox</a></h1>
+   <p class="author">
+    <span class="date">2012-11-30 17:35:00 -0800</span>
+  </p>
+  <div class="content">
+    <p>Sometimes user-provided javascript needs to be run, which is scary (<a href='https://github.com/kitcambridge/evil.js'>Evil.js anybody?</a>). At first, we tried to sanitize third-party code to make it safe, but this got ugly quickly. It meant that we had to prepend code to every CSS selector to make sure external styles only affected the right elements, the HTML had to always be well-formed, and let&#8217;s not even talk about the JS. It also meant we couldn&#8217;t surface meaningful javascript errors when something went wrong, because it was a small piece of javascript compiled in a larger application. We looked for another solution.</p>
+
+<p><a href='http://jsfiddle.net'>JSFiddle</a> and <a href='http://jsbin.com'>JSBin</a> seemed to have similar requirements, and handled it using iframes. As frontend developers though, our gut aversion to iframes stopped us from typing the tag into our terminals in good conscience. However, they seemed to work nicely because the scripts couldn&#8217;t touch anything but their box, CSS and JS selectors just worked, and we could monitor errors easily. <a href='http://benvinegar.github.com/seamless-talk/'>This</a> talk covers more of the benefits of iframes (and it&#8217;s in 3D).</p>
+
+<p>Although this isn&#8217;t a very common requirement, we built a simple library to handle this which we call <a href='http://github.com/versal/sandbox-js'>Sandbox.js</a>. It enables a few nice things like importing external JS and CSS as well as stopping code from creating dialogs (alert/confirm/prompt) unless desired. In the near future we hope to add error handling and a nice callback system so the frame can more easily communicate with the parent without nasty globals everywhere.</p>
+
+<p>Happy Sandboxing!</p>
+  </div>
+
 
    <!-- here add you post markup -->
    <h1><a href="/frameworks/2012/11/16/jellyfish-introduction">Beyond the Reader Monad: Dependency Injection with Jellyfish</a></h1>
@@ -149,53 +189,94 @@
     <p>One handy use of the reader monad is to build up a program that has a single external dependency which can be provided at the appropriate time.</p>
 
 <p>In Scala a reader might look something like this:</p>
+<div class='highlight'><pre><code class='scala'><span class='k'>trait</span> <span class='nc'>Monad</span><span class='o'>[</span><span class='kt'>A</span>, <span class='kt'>F</span><span class='o'>[</span><span class='k'>_</span><span class='o'>]]</span> <span class='o'>{</span>
+  <span class='k'>def</span> <span class='n'>map</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>](</span><span class='n'>f</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=&gt;</span> <span class='n'>B</span><span class='o'>)</span><span class='k'>:</span> <span class='kt'>F</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>]</span>
+  <span class='k'>def</span> <span class='n'>flatMap</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>](</span><span class='n'>f</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=&gt;</span> <span class='n'>F</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>])</span><span class='k'>:</span> <span class='kt'>F</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>]</span>
+<span class='o'>}</span>
 
-<p>Liquid error: No such file or directory - posix_spawnp</p>
+<span class='k'>class</span> <span class='nc'>Reader</span><span class='o'>[</span><span class='kt'>E</span>, <span class='kt'>A</span><span class='o'>](</span><span class='n'>g</span><span class='k'>:</span> <span class='kt'>E</span> <span class='o'>=&gt;</span> <span class='n'>A</span><span class='o'>)</span> <span class='k'>extends</span> <span class='nc'>Monad</span><span class='o'>[</span><span class='kt'>A</span>, <span class='o'>({</span><span class='k'>type</span> <span class='kt'>λ</span><span class='o'>[</span><span class='kt'>α</span><span class='o'>]</span> <span class='kt'>=</span> <span class='kt'>E</span> <span class='k'>=&gt;</span> <span class='kt'>α</span><span class='o'>})</span><span class='k'>#</span><span class='kt'>λ</span><span class='o'>]</span> <span class='o'>{</span>
+  <span class='k'>def</span> <span class='n'>apply</span><span class='o'>(</span><span class='n'>e</span><span class='k'>:</span> <span class='kt'>E</span><span class='o'>)</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=</span> <span class='n'>g</span><span class='o'>(</span><span class='n'>e</span><span class='o'>)</span>
+  <span class='k'>def</span> <span class='n'>map</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>](</span><span class='n'>f</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=&gt;</span> <span class='n'>B</span><span class='o'>)</span><span class='k'>:</span> <span class='kt'>E</span> <span class='o'>=&gt;</span> <span class='n'>B</span> <span class='k'>=</span> <span class='o'>{</span> <span class='n'>e</span> <span class='k'>=&gt;</span> <span class='n'>f</span><span class='o'>(</span><span class='n'>g</span><span class='o'>(</span><span class='n'>e</span><span class='o'>))</span> <span class='o'>}</span>
+  <span class='k'>def</span> <span class='n'>flatMap</span><span class='o'>[</span><span class='kt'>B</span><span class='o'>](</span><span class='n'>f</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=&gt;</span> <span class='o'>(</span><span class='n'>E</span> <span class='k'>=&gt;</span> <span class='n'>B</span><span class='o'>))</span><span class='k'>:</span> <span class='kt'>E</span> <span class='o'>=&gt;</span> <span class='n'>B</span> <span class='k'>=</span> <span class='o'>{</span> <span class='n'>e</span> <span class='k'>=&gt;</span> <span class='n'>f</span><span class='o'>(</span><span class='n'>g</span><span class='o'>(</span><span class='n'>e</span><span class='o'>))(</span><span class='n'>e</span><span class='o'>)</span> <span class='o'>}</span>
+<span class='o'>}</span>
 
+<span class='k'>object</span> <span class='nc'>Reader</span> <span class='o'>{</span>
+  <span class='k'>implicit</span> <span class='k'>def</span> <span class='n'>function1ToReader</span><span class='o'>[</span><span class='kt'>E</span>, <span class='kt'>A</span><span class='o'>](</span><span class='n'>g</span><span class='k'>:</span> <span class='kt'>E</span> <span class='o'>=&gt;</span> <span class='n'>A</span><span class='o'>)</span><span class='k'>:</span> <span class='kt'>Reader</span><span class='o'>[</span><span class='kt'>E</span>, <span class='kt'>A</span><span class='o'>]</span> <span class='k'>=</span> <span class='k'>new</span> <span class='nc'>Reader</span><span class='o'>(</span><span class='n'>g</span><span class='o'>)</span>
+<span class='o'>}</span>
+</code></pre></div>
 <p>We can use this to compose a program from parts which each depend on the same external context:</p>
+<div class='highlight'><pre><code class='scala'><span class='k'>import</span> <span class='nn'>scala.xml.NodeSeq</span>
+<span class='k'>import</span> <span class='nn'>Reader.function1ToReader</span>
 
-<p>Liquid error: No such file or directory - posix_spawnp</p>
+<span class='k'>val</span> <span class='n'>htmlHeader</span><span class='k'>:</span> <span class='kt'>String</span> <span class='o'>=&gt;</span> <span class='nc'>NodeSeq</span> <span class='k'>=</span>
+  <span class='o'>{</span> <span class='n'>title</span> <span class='k'>=&gt;</span> <span class='o'>&lt;</span><span class='n'>head</span><span class='o'>&gt;&lt;</span><span class='n'>title</span><span class='o'>&gt;{</span><span class='n'>title</span><span class='o'>}&lt;/</span><span class='n'>title</span><span class='o'>&gt;&lt;/</span><span class='n'>head</span><span class='o'>&gt;</span> <span class='o'>}</span>
 
+<span class='k'>val</span> <span class='n'>htmlBody</span><span class='k'>:</span> <span class='kt'>String</span> <span class='o'>=&gt;</span> <span class='nc'>NodeSeq</span> <span class='k'>=</span>
+  <span class='o'>{</span> <span class='n'>title</span> <span class='k'>=&gt;</span> <span class='o'>&lt;</span><span class='n'>body</span><span class='o'>&gt;&lt;</span><span class='n'>h1</span><span class='o'>&gt;{</span><span class='n'>title</span><span class='o'>}&lt;/</span><span class='n'>h1</span><span class='o'>&gt;&lt;/</span><span class='n'>body</span><span class='o'>&gt;</span> <span class='o'>}</span>
+
+<span class='k'>val</span> <span class='n'>html</span><span class='k'>:</span> <span class='kt'>NodeSeq</span> <span class='o'>=&gt;</span> <span class='nc'>NodeSeq</span> <span class='k'>=&gt;</span> <span class='nc'>NodeSeq</span> <span class='k'>=</span>
+  <span class='o'>{</span> <span class='n'>header</span> <span class='k'>=&gt;</span> <span class='n'>body</span> <span class='k'>=&gt;</span> <span class='o'>&lt;</span><span class='n'>html</span><span class='o'>&gt;{</span><span class='n'>header</span><span class='o'>}{</span><span class='n'>body</span><span class='o'>}&lt;/</span><span class='n'>html</span><span class='o'>&gt;</span> <span class='o'>}</span>
+
+<span class='k'>val</span> <span class='n'>pageFromTitle</span><span class='k'>:</span> <span class='kt'>Reader</span><span class='o'>[</span><span class='kt'>String</span>, <span class='kt'>NodeSeq</span><span class='o'>]</span> <span class='k'>=</span>
+  <span class='k'>for</span> <span class='o'>{</span>
+    <span class='n'>header</span> <span class='k'>&lt;-</span> <span class='n'>htmlHeader</span>
+    <span class='n'>body</span>   <span class='k'>&lt;-</span> <span class='n'>htmlBody</span>
+    <span class='n'>page</span>   <span class='k'>=</span>  <span class='n'>html</span><span class='o'>(</span><span class='n'>header</span><span class='o'>)(</span><span class='n'>body</span><span class='o'>)</span>
+  <span class='o'>}</span> <span class='k'>yield</span> <span class='n'>page</span> <span class='c1'>// a program which, given a title, produces an HTML page</span>
+
+<span class='k'>val</span> <span class='n'>page</span><span class='k'>:</span> <span class='kt'>NodeSeq</span> <span class='o'>=</span> <span class='n'>pageFromTitle</span><span class='o'>(</span><span class='s'>&quot;Reader Example&quot;</span><span class='o'>)</span>
+<span class='n'>println</span><span class='o'>(</span><span class='n'>page</span><span class='o'>)</span> <span class='c1'>// &lt;html&gt;&lt;head&gt;&lt;title&gt;Reader Example&lt;/title&gt;&lt;/head&gt;&lt;body&gt; ...</span>
+</code></pre></div>
 <h2 id='the_problem'>The problem</h2>
 
 <p>This is an easy way to do dependency injection, but it has a drawback: the dependency has to be a single thing. This makes it hard to build a program from components that have different depenencies.</p>
 
 <p>Consider if we change <code>htmlBody</code> to take a <code>Date</code> instead of a <code>String</code>:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='k'>val</span> <span class='n'>htmlBody</span><span class='k'>:</span> <span class='kt'>Date</span> <span class='o'>=&gt;</span> <span class='nc'>NodeSeq</span> <span class='k'>=</span> <span class='n'>date</span> <span class='k'>=&gt;</span> <span class='o'>&lt;</span><span class='n'>body</span><span class='o'>&gt;&lt;</span><span class='n'>h1</span><span class='o'>&gt;{</span><span class='n'>date</span><span class='o'>.</span><span class='n'>toString</span><span class='o'>}&lt;/</span><span class='n'>h1</span><span class='o'>&gt;&lt;/</span><span class='n'>body</span><span class='o'>&gt;</span>
+</code></pre></div>
 <p>The for expression above will no longer compile, because the reader is an instance of <code>Reader[String, NodeSeq]</code>, so both its <code>map</code> and <code>flatMap</code> methods expect to be passed a function which takes a <code>String</code>, not a <code>Date</code>:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='o'>[</span><span class='kt'>error</span><span class='o'>]</span>  <span class='n'>found</span>   <span class='k'>:</span> <span class='kt'>java.util.Date</span> <span class='o'>=&gt;</span> <span class='n'>scala</span><span class='o'>.</span><span class='n'>xml</span><span class='o'>.</span><span class='nc'>NodeSeq</span>
+<span class='o'>[</span><span class='kt'>error</span><span class='o'>]</span>  <span class='n'>required</span><span class='k'>:</span> <span class='kt'>String</span> <span class='o'>=&gt;</span> <span class='o'>?</span>
+<span class='o'>[</span><span class='kt'>error</span><span class='o'>]</span>   <span class='n'>body</span>   <span class='k'>&lt;-</span> <span class='n'>htmlBody</span>
+</code></pre></div>
 <h2 id='the_solution'>The solution</h2>
 
 <p>What we really want is a way to construct a program, and keep track of all the different dependencies as we go. At the end, we&#8217;ll have a sort of arbitrary-order curried function that we can interpret recursively, providing each dependency as needed.</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='k'>val</span> <span class='n'>simpleProgram</span><span class='k'>:</span> <span class='kt'>Program</span> <span class='o'>=</span>
+  <span class='n'>program</span> <span class='o'>{</span>
+    <span class='k'>val</span> <span class='n'>bar</span><span class='k'>:</span> <span class='kt'>Bar</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Bar</span><span class='o'>]</span> <span class='c1'>// retrieve the `Bar` dependency</span>
+    <span class='k'>val</span> <span class='n'>foo</span><span class='k'>:</span> <span class='kt'>Foo</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Foo</span><span class='o'>]</span> <span class='c1'>// retrieve the `Foo` dependency</span>
+    <span class='nc'>Return</span><span class='o'>(</span><span class='s'>&quot;foo is &quot;</span> <span class='o'>+</span> <span class='n'>foo</span><span class='o'>.</span><span class='n'>x</span> <span class='o'>+</span> <span class='s'>&quot;, bar is &quot;</span> <span class='o'>+</span> <span class='n'>bar</span><span class='o'>.</span><span class='n'>x</span><span class='o'>)</span>
+  <span class='o'>}</span>
+</code></pre></div>
 <p>This is what Jellyfish gives us.</p>
 
 <h2 id='how_it_works'>How it works</h2>
 
 <p>A Jellyfish program is represented as an instance of the <code>Program</code> trait, which has two implementations:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='k'>case</span> <span class='k'>class</span> <span class='nc'>Return</span><span class='o'>(</span><span class='n'>a</span><span class='k'>:</span> <span class='kt'>Any</span><span class='o'>)</span> <span class='k'>extends</span> <span class='nc'>Program</span>
+<span class='k'>case</span> <span class='k'>class</span> <span class='nc'>With</span><span class='o'>[</span><span class='kt'>A</span><span class='o'>](</span><span class='n'>c</span><span class='k'>:</span> <span class='kt'>Class</span><span class='o'>[</span><span class='kt'>A</span><span class='o'>],</span> <span class='n'>f</span><span class='k'>:</span> <span class='kt'>A</span> <span class='o'>=&gt;</span> <span class='nc'>Program</span><span class='o'>)</span> <span class='k'>extends</span> <span class='nc'>Program</span>
+</code></pre></div>
 <p>The <code>read</code> function, which wraps Scala&#8217;s <code>shift</code> function, takes a generic function of type <code>A =&gt; Program</code> and wraps it in a <code>With</code> which tracks the type of <code>A</code>. This can happen an arbitrary number of times, resulting in a data structure analogous to a curried function.</p>
 
 <p>Ignoring some of the wrappers, this:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='k'>val</span> <span class='n'>bar</span><span class='k'>:</span> <span class='kt'>Bar</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Bar</span><span class='o'>]</span> <span class='c1'>// retrieve the `Bar` dependency</span>
+<span class='k'>val</span> <span class='n'>foo</span><span class='k'>:</span> <span class='kt'>Foo</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Foo</span><span class='o'>]</span> <span class='c1'>// retrieve the `Foo` dependency</span>
+<span class='nc'>Return</span><span class='o'>(</span><span class='s'>&quot;foo is &quot;</span> <span class='o'>+</span> <span class='n'>foo</span><span class='o'>.</span><span class='n'>x</span> <span class='o'>+</span> <span class='s'>&quot;, bar is &quot;</span> <span class='o'>+</span> <span class='n'>bar</span><span class='o'>.</span><span class='n'>x</span><span class='o'>)</span>
+</code></pre></div>
 <p>becomes:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='n'>bar</span><span class='k'>:</span> <span class='kt'>Bar</span> <span class='o'>=&gt;</span> <span class='o'>{</span>
+  <span class='k'>val</span> <span class='n'>foo</span><span class='k'>:</span> <span class='kt'>Foo</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Foo</span><span class='o'>]</span> <span class='c1'>// retrieve the `Foo` dependency</span>
+  <span class='nc'>Return</span><span class='o'>(</span><span class='s'>&quot;foo is &quot;</span> <span class='o'>+</span> <span class='n'>foo</span><span class='o'>.</span><span class='n'>x</span> <span class='o'>+</span> <span class='s'>&quot;, bar is &quot;</span> <span class='o'>+</span> <span class='n'>bar</span><span class='o'>.</span><span class='n'>x</span><span class='o'>)</span>
+<span class='o'>}</span>
+</code></pre></div>
 <p>which becomes:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='n'>bar</span><span class='k'>:</span> <span class='kt'>Bar</span> <span class='o'>=&gt;</span> <span class='o'>{</span>
+  <span class='n'>foo</span><span class='k'>:</span> <span class='kt'>Foo</span> <span class='o'>=&gt;</span> <span class='o'>{</span>
+    <span class='nc'>Return</span><span class='o'>(</span><span class='s'>&quot;foo is &quot;</span> <span class='o'>+</span> <span class='n'>foo</span><span class='o'>.</span><span class='n'>x</span> <span class='o'>+</span> <span class='s'>&quot;, bar is &quot;</span> <span class='o'>+</span> <span class='n'>bar</span><span class='o'>.</span><span class='n'>x</span><span class='o'>)</span>
+  <span class='o'>}</span>
+<span class='o'>}</span>
+</code></pre></div>
 <p>which is a curried function with two dependencies.</p>
 
 <p>An interpreter is then built to unwrap each nested <code>With</code>, extract the function of type <code>A =&gt; Program</code>, provide the appropriate instance of <code>A</code>, and continue until the program completes with a <code>Return</code>.</p>
@@ -203,22 +284,50 @@
 <h2 id='an_example'>An example</h2>
 
 <p>First, write a program which retrieves dependencies via the <code>read</code> function:</p>
+<div class='highlight'><pre><code class='scala'><span class='k'>case</span> <span class='k'>class</span> <span class='nc'>Foo</span><span class='o'>(</span><span class='n'>x</span><span class='k'>:</span> <span class='kt'>Int</span><span class='o'>)</span>
+<span class='k'>case</span> <span class='k'>class</span> <span class='nc'>Bar</span><span class='o'>(</span><span class='n'>x</span><span class='k'>:</span> <span class='kt'>String</span><span class='o'>)</span>
 
-<p>Liquid error: No such file or directory - posix_spawnp</p>
+<span class='k'>object</span> <span class='nc'>SimpleProgram</span> <span class='o'>{</span>
 
-<p>Second, write an interpreter provides the dependencies to the program:</p>
+  <span class='k'>import</span> <span class='nn'>com.versal.jellyfish.</span><span class='o'>{</span><span class='n'>program</span><span class='o'>,</span> <span class='nc'>Program</span><span class='o'>,</span> <span class='n'>read</span><span class='o'>,</span> <span class='nc'>Return</span><span class='o'>}</span>
 
-<p>Liquid error: No such file or directory - posix_spawnp</p>
+  <span class='c1'>// create a program with some dependencies</span>
+  <span class='k'>val</span> <span class='n'>simpleProgram</span><span class='k'>:</span> <span class='kt'>Program</span> <span class='o'>=</span>
+   <span class='n'>program</span> <span class='o'>{</span>
+      <span class='k'>val</span> <span class='n'>bar</span><span class='k'>:</span> <span class='kt'>Bar</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Bar</span><span class='o'>]</span> <span class='c1'>// retrieve the `Bar` dependency</span>
+      <span class='k'>val</span> <span class='n'>foo</span><span class='k'>:</span> <span class='kt'>Foo</span> <span class='o'>=</span> <span class='n'>read</span><span class='o'>[</span><span class='kt'>Foo</span><span class='o'>]</span> <span class='c1'>// retrieve the `Foo` dependency</span>
+      <span class='nc'>Return</span><span class='o'>(</span><span class='s'>&quot;foo is &quot;</span> <span class='o'>+</span> <span class='n'>foo</span><span class='o'>.</span><span class='n'>x</span> <span class='o'>+</span> <span class='s'>&quot;, bar is &quot;</span> <span class='o'>+</span> <span class='n'>bar</span><span class='o'>.</span><span class='n'>x</span><span class='o'>)</span>
+    <span class='o'>}</span>
 
+<span class='o'>}</span>
+</code></pre></div>
+<p>Second, write an interpreter which provides the dependencies to the program:</p>
+<div class='highlight'><pre><code class='scala'><span class='k'>object</span> <span class='nc'>SimpleInterpreter</span> <span class='o'>{</span>
+
+  <span class='k'>import</span> <span class='nn'>com.versal.jellyfish.</span><span class='o'>{</span><span class='n'>classy</span><span class='o'>,</span> <span class='nc'>Program</span><span class='o'>,</span> <span class='nc'>Return</span><span class='o'>,</span> <span class='nc'>With</span><span class='o'>}</span>
+
+  <span class='k'>val</span> <span class='n'>foo</span> <span class='k'>=</span> <span class='nc'>Foo</span><span class='o'>(</span><span class='mi'>42</span><span class='o'>)</span>
+  <span class='k'>val</span> <span class='n'>bar</span> <span class='k'>=</span> <span class='nc'>Bar</span><span class='o'>(</span><span class='s'>&quot;baz&quot;</span><span class='o'>)</span>
+
+  <span class='c1'>// run a program, injecting dependencies as needed</span>
+  <span class='k'>def</span> <span class='n'>run</span><span class='o'>(</span><span class='n'>p</span><span class='k'>:</span> <span class='kt'>Program</span><span class='o'>)</span><span class='k'>:</span> <span class='kt'>Any</span> <span class='o'>=</span>
+    <span class='n'>p</span> <span class='k'>match</span> <span class='o'>{</span>
+      <span class='k'>case</span> <span class='nc'>With</span><span class='o'>(</span><span class='n'>c</span><span class='o'>,</span> <span class='n'>f</span><span class='o'>)</span> <span class='k'>if</span> <span class='n'>c</span><span class='o'>.</span><span class='n'>isA</span><span class='o'>[</span><span class='kt'>Foo</span><span class='o'>]</span> <span class='k'>=&gt;</span> <span class='n'>run</span><span class='o'>(</span><span class='n'>f</span><span class='o'>(</span><span class='n'>foo</span><span class='o'>))</span> <span class='c1'>// inject the `Foo` dependency</span>
+      <span class='k'>case</span> <span class='nc'>With</span><span class='o'>(</span><span class='n'>c</span><span class='o'>,</span> <span class='n'>f</span><span class='o'>)</span> <span class='k'>if</span> <span class='n'>c</span><span class='o'>.</span><span class='n'>isA</span><span class='o'>[</span><span class='kt'>Bar</span><span class='o'>]</span> <span class='k'>=&gt;</span> <span class='n'>run</span><span class='o'>(</span><span class='n'>f</span><span class='o'>(</span><span class='n'>bar</span><span class='o'>))</span> <span class='c1'>// inject the `Bar` dependency</span>
+      <span class='k'>case</span> <span class='nc'>Return</span><span class='o'>(</span><span class='n'>a</span><span class='o'>)</span>                <span class='k'>=&gt;</span> <span class='n'>a</span>           <span class='c1'>// all done - return the result</span>
+    <span class='o'>}</span>
+
+<span class='o'>}</span>
+</code></pre></div>
 <p>Third, run the interpreter:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
-
+<div class='highlight'><pre><code class='scala'><span class='k'>val</span> <span class='n'>result</span> <span class='k'>=</span> <span class='nc'>SimpleInterpreter</span><span class='o'>.</span><span class='n'>run</span><span class='o'>(</span><span class='nc'>SimpleProgram</span><span class='o'>.</span><span class='n'>simpleProgram</span><span class='o'>)</span>
+<span class='n'>println</span><span class='o'>(</span><span class='n'>result</span><span class='o'>)</span> <span class='c1'>// prints &quot;foo is 42, bar is baz&quot;</span>
+</code></pre></div>
 <h2 id='use_it'>Use it</h2>
 
 <p>Jellyfish lives on GitHub at <a href='https://github.com/Versal/jellyfish'>github.com/Versal/jellyfish</a>. To use it in your own project, <a href='http://www.scala-sbt.org/release/docs/Detailed-Topics/Compiler-Plugins.html#continuations-plugin-example'>enable continuations</a> and add the Jellyfish library to your <em>build.sbt</em> file:</p>
-
-<p>Liquid error: No such file or directory - posix_spawnp</p>
+<div class='highlight'><pre><code class='scala'><span class='n'>libraryDependencies</span> <span class='o'>+=</span> <span class='s'>&quot;com.versal&quot;</span> <span class='o'>%%</span> <span class='s'>&quot;jellyfish&quot;</span> <span class='o'>%</span> <span class='s'>&quot;0.1-RC1&quot;</span>
+</code></pre></div>
   </div>
 
 
@@ -261,11 +370,29 @@
       <footer>
         <p>&copy; Versal 2012 
           with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
-          and <a href="http://github.com/dhulihan/hooligan" target="_blank">The Hooligan Theme</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
         </p>
       </footer>
+
     </div> <!-- /container -->
+
     
+
+
+  <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-123-1234']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
   </body>
 </html>
 
